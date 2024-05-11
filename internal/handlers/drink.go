@@ -1,21 +1,13 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/HeadGardener/coursework/internal/dto"
 	"github.com/HeadGardener/coursework/internal/models"
 	"github.com/gin-gonic/gin"
 )
-
-type drinkRequest struct {
-	Name   string `json:"name"`
-	Type   string `json:"type"`
-	Bottle int    `json:"bottle"`
-	Cost   int    `json:"cost"`
-	Soft   bool   `json:"soft"`
-}
 
 func (h *Handler) viewDrinks(c *gin.Context) {
 	adult, err := getIsAdult(c)
@@ -51,12 +43,12 @@ func (h *Handler) viewByID(c *gin.Context) {
 }
 
 func (h *Handler) addDrink(c *gin.Context) {
-	var req drinkRequest
+	var req dto.DrinkRequest
 	if err := c.BindJSON(&req); err != nil {
 		newErrResponse(c, http.StatusBadRequest, "failed while decoding update drink request", err)
 	}
 
-	if err := req.validate(); err != nil {
+	if err := req.Validate(); err != nil {
 		newErrResponse(c, http.StatusBadRequest, "failed while validating update drink request", err)
 	}
 
@@ -84,12 +76,12 @@ func (h *Handler) updateDrink(c *gin.Context) {
 		newErrResponse(c, http.StatusBadRequest, "failed while checking id", err)
 	}
 
-	var req drinkRequest
+	var req dto.DrinkRequest
 	if err = c.BindJSON(&req); err != nil {
 		newErrResponse(c, http.StatusBadRequest, "failed while decoding update drink request", err)
 	}
 
-	if err = req.validate(); err != nil {
+	if err = req.Validate(); err != nil {
 		newErrResponse(c, http.StatusBadRequest, "failed while validating update drink request", err)
 	}
 
@@ -122,16 +114,4 @@ func (h *Handler) deleteDrink(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]any{
 		"status": "deleted",
 	})
-}
-
-func (r *drinkRequest) validate() error {
-	if r.Bottle < 0 {
-		return errors.New("invalid bottle: bottle can't be less than 0")
-	}
-
-	if r.Cost < 0 {
-		return errors.New("invalid cost: cost can't be less than 0")
-	}
-
-	return nil
 }

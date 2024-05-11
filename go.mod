@@ -1,6 +1,6 @@
 module github.com/HeadGardener/coursework
 
-go 1.21.0
+go 1.22.0
 
 require (
 	github.com/cockroachdb/cockroach-go/v2 v2.3.5

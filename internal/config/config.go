@@ -3,8 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -13,6 +15,7 @@ type Config struct {
 	DBConfig     DBConfig
 	ServerConfig ServerConfig
 	RedisConfig  RedisConfig
+	TokensConfig TokensConfig
 }
 
 type DBConfig struct {
@@ -29,10 +32,18 @@ type RedisConfig struct {
 	DB       int
 }
 
+type TokensConfig struct {
+	SecretKey      string
+	AccessTokenTTL time.Duration
+
+	InitialLen      int
+	RefreshTokenTTL time.Duration
+}
+
 func Init(path string) (*Config, error) {
 	err := godotenv.Load(path)
 	if err != nil {
-		return nil, fmt.Errorf("invalid path: %s", path)
+		log.Println("invalid config path: ", err)
 	}
 
 	dburl := os.Getenv("DATABASE_URL")
@@ -57,6 +68,26 @@ func Init(path string) (*Config, error) {
 		return nil, errors.New("redis db is empty")
 	}
 
+	accessTokenSecretKey := os.Getenv("ACCESS_TOKEN_SECRET_KEY")
+	if accessTokenSecretKey == "" {
+		return nil, errors.New("access token secret key is empty")
+	}
+
+	accessTokenTTL, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_TTL"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid access token ttl: %w", err)
+	}
+
+	refreshInitialLen, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_INITIAL_LEN"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid refresh token initial len: %w", err)
+	}
+
+	refreshTokenTTL, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_TTL"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid refresh token ttl: %w", err)
+	}
+
 	return &Config{
 		DBConfig: DBConfig{
 			URL: dburl,
@@ -68,6 +99,12 @@ func Init(path string) (*Config, error) {
 			Addr:     redisAddr,
 			Password: redisPassword,
 			DB:       redisDB,
+		},
+		TokensConfig: TokensConfig{
+			SecretKey:       accessTokenSecretKey,
+			AccessTokenTTL:  time.Duration(accessTokenTTL) * time.Minute,
+			InitialLen:      refreshInitialLen,
+			RefreshTokenTTL: time.Duration(refreshTokenTTL) * time.Minute,
 		},
 	}, nil
 }

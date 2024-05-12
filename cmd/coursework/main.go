@@ -10,6 +10,7 @@ import (
 
 	"github.com/HeadGardener/coursework/internal/config"
 	"github.com/HeadGardener/coursework/internal/handlers"
+	"github.com/HeadGardener/coursework/internal/lib/auth"
 	"github.com/HeadGardener/coursework/internal/server"
 	"github.com/HeadGardener/coursework/internal/service"
 	"github.com/HeadGardener/coursework/internal/storage"
@@ -49,7 +50,11 @@ func main() {
 	)
 
 	var (
-		authService  = service.NewAuthService(tokenStorage, userStorage)
+		tokenManager = auth.NewTokenManager(&conf.TokensConfig)
+	)
+
+	var (
+		authService  = service.NewAuthService(tokenManager, tokenStorage, userStorage)
 		drinkService = service.NewDrinkService(drinkStorage)
 	)
 

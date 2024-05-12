@@ -23,6 +23,11 @@ type SignInReq struct {
 	Password string `json:"password"`
 }
 
+type RefreshRequest struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func (r *SignUpReq) Validate() error {
 	if !checkUsername.MatchString(r.Username) {
 		return errors.New("invalid user name: must contain only letters, numbers and symbols(_-) ")

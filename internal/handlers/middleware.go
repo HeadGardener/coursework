@@ -52,13 +52,9 @@ func (h *Handler) identifyUser(c *gin.Context) {
 			errors.New("jwt token is empty"))
 	}
 
-	userAttributes, err := auth.ParseToken(token)
+	userAttributes, err := h.authService.ParseAccessToken(token)
 	if err != nil {
 		newErrResponse(c, http.StatusUnauthorized, "failed while parsing token", err)
-	}
-
-	if err = h.authService.Check(c.Request.Context(), userAttributes.ID, token); err != nil {
-		newErrResponse(c, http.StatusUnauthorized, "failed while checking session", err)
 	}
 
 	c.Set(userCtx, userAttributes)

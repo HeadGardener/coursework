@@ -3,7 +3,6 @@ module github.com/HeadGardener/coursework
 go 1.22.0
 
 require (
-	github.com/cockroachdb/cockroach-go/v2 v2.3.5
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.1

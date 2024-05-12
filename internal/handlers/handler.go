@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/HeadGardener/coursework/internal/lib/auth"
 	"github.com/HeadGardener/coursework/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +12,9 @@ import (
 
 type AuthService interface {
 	SignUp(ctx context.Context, username, name string, age int, password string) (string, error)
-	SignIn(ctx context.Context, username, password string) (string, error)
-	Check(ctx context.Context, userID, token string) error
+	SignIn(ctx context.Context, username, password string) (models.Tokens, error)
+	ParseAccessToken(token string) (auth.UserAttributes, error)
+	Refresh(ctx context.Context, accessToken, refreshToken string) (models.Tokens, error)
 	LogOut(ctx context.Context, userID string) error
 }
 
@@ -45,6 +47,7 @@ func (h *Handler) InitRoutes() http.Handler {
 		{
 			auth.POST("/sign-up", h.signUp)
 			auth.POST("/sign-in", h.signIn)
+			auth.POST("/refresh", h.refresh)
 			auth.PUT("/logout", h.identifyUser, h.logout)
 		}
 

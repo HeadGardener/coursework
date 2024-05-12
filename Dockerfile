@@ -1,12 +1,21 @@
-FROM golang:1.21.0
+FROM golang:1.22.0-alpine AS builder
 
 WORKDIR /app
 
-COPY ./ ./
+COPY go.mod go.sum ./
 
 RUN go mod download
+
+COPY ./ ./
+
 RUN go build -o coursework ./cmd/coursework/main.go
 
-EXPOSE 5000
+FROM alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/coursework /app/coursework
+
+EXPOSE 8080
 
 CMD ["./coursework"]

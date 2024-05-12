@@ -44,14 +44,31 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authService.SignIn(c, req.Username, req.Password)
+	tokens, err := h.authService.SignIn(c, req.Username, req.Password)
 	if err != nil {
 		newErrResponse(c, http.StatusInternalServerError, "failed while signing in", err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, map[string]any{
-		"token": token,
+	c.JSON(http.StatusCreated, tokens)
+}
+
+func (h *Handler) refresh(c *gin.Context) {
+	var req dto.RefreshRequest
+	if err := c.BindJSON(&req); err != nil {
+		newErrResponse(c, http.StatusBadRequest, "failed while decoding RefreshRequest", err)
+		return
+	}
+
+	tokens, err := h.authService.Refresh(c.Request.Context(), req.AccessToken, req.RefreshToken)
+	if err != nil {
+		newErrResponse(c, http.StatusBadRequest, "failed while refreshing", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]any{
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
 	})
 }
 

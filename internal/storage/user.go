@@ -39,3 +39,13 @@ func (s *UserStorage) GetByUsername(ctx context.Context, username string) (*mode
 
 	return &user, nil
 }
+
+func (s *UserStorage) GetByID(ctx context.Context, userID string) (*models.User, error) {
+	var user models.User
+
+	if err := s.db.GetContext(ctx, &user, `select * from users where id=$1`, userID); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

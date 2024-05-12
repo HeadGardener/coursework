@@ -2,10 +2,10 @@ package storage
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"time"
 
-	"github.com/HeadGardener/coursework/internal/lib/auth"
+	"github.com/HeadGardener/coursework/internal/models"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -17,9 +17,14 @@ func NewTokenStorage(rdb *redis.Client) *TokenStorage {
 	return &TokenStorage{rdb: rdb}
 }
 
-func (s *TokenStorage) Add(ctx context.Context, userID, token string) error {
-	s.rdb.Del(ctx, userID)
-	err := s.rdb.Set(ctx, userID, token, auth.TokenTTL).Err()
+func (s *TokenStorage) Add(ctx context.Context, session models.Session, ttl time.Duration) error {
+	s.rdb.Del(ctx, session.UserID)
+
+	b, err := models.MarshalSession(session)
+	if err != nil {
+		return fmt.Errorf("failed to create session: %w", err)
+	}
+	err = s.rdb.Set(ctx, session.UserID, b, ttl).Err()
 	if err != nil {
 		return fmt.Errorf("unable to store token: %w", err)
 	}
@@ -27,17 +32,18 @@ func (s *TokenStorage) Add(ctx context.Context, userID, token string) error {
 	return nil
 }
 
-func (s *TokenStorage) Check(ctx context.Context, userID, token string) error {
-	t, err := s.rdb.Get(ctx, userID).Result()
+func (s *TokenStorage) Get(ctx context.Context, userID string) (models.Session, error) {
+	b, err := s.rdb.Get(ctx, userID).Bytes()
 	if err != nil {
-		return fmt.Errorf("user session doesn't exist: %w", err)
+		return models.Session{}, fmt.Errorf("user session doesn't exist: %w", err)
 	}
 
-	if t != token {
-		return errors.New("tokens are different")
+	session, err := models.UnmarshalSession(b)
+	if err != nil {
+		return models.Session{}, fmt.Errorf("failed to get session: %w", err)
 	}
 
-	return nil
+	return session, nil
 }
 
 func (s *TokenStorage) Delete(ctx context.Context, userID string) error {

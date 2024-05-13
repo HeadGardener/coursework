@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	checkUsername = regexp.MustCompile(`[0-9A-z]$`)
-	checkName     = regexp.MustCompile(`[A-z]$`)
+	checkUsername = regexp.MustCompile(`^[0-9A-Za-z]+$`)
+	checkName     = regexp.MustCompile(`^[A-Za-z]+$`)
 	checkPassword = regexp.MustCompile(`[0-9A-z]{8,16}$`)
 )
 
@@ -30,7 +30,7 @@ type RefreshRequest struct {
 
 func (r *SignUpReq) Validate() error {
 	if !checkUsername.MatchString(r.Username) {
-		return errors.New("invalid user name: must contain only letters, numbers and symbols(_-) ")
+		return errors.New("invalid username: must contain only letters, numbers and symbols(_-) ")
 	}
 
 	if !checkName.MatchString(r.Name) {

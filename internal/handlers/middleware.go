@@ -33,28 +33,33 @@ func (h *Handler) identifyUser(c *gin.Context) {
 	if header == "" {
 		newErrResponse(c, http.StatusUnauthorized, "failed while identifying user",
 			errors.New("empty auth header"))
+		return
 	}
 
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != headerPartsLen {
 		newErrResponse(c, http.StatusUnauthorized, "failed while identifying user",
 			errors.New("invalid auth header, must be like `Bearer token`"))
+		return
 	}
 
 	if headerParts[0] != "Bearer" {
 		newErrResponse(c, http.StatusUnauthorized, "failed while identifying user",
 			fmt.Errorf("invalid auth header %s, must be Bearer", headerParts[0]))
+		return
 	}
 
 	token := headerParts[1]
 	if token == "" {
 		newErrResponse(c, http.StatusUnauthorized, "failed while identifying user",
 			errors.New("jwt token is empty"))
+		return
 	}
 
 	userAttributes, err := h.authService.ParseAccessToken(token)
 	if err != nil {
 		newErrResponse(c, http.StatusUnauthorized, "failed while parsing token", err)
+		return
 	}
 
 	c.Set(userCtx, userAttributes)

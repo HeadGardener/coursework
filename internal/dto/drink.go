@@ -11,8 +11,8 @@ type DrinkRequest struct {
 }
 
 func (r *DrinkRequest) Validate() error {
-	if r.Bottle < 0 {
-		return errors.New("invalid bottle: bottle can't be less than 0")
+	if r.Bottle <= 0 {
+		return errors.New("invalid bottle: bottle can't be less or equals 0")
 	}
 
 	if r.Cost < 0 {

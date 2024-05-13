@@ -76,10 +76,12 @@ func (h *Handler) logout(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
 		newErrResponse(c, http.StatusForbidden, "failed while getting user id", err)
+		return
 	}
 
 	if err = h.authService.LogOut(c, userID); err != nil {
 		newErrResponse(c, http.StatusInternalServerError, "failed while logging out", err)
+		return
 	}
 
 	c.JSON(http.StatusOK, map[string]any{
